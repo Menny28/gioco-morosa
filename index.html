@@ -2,32 +2,197 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tamagotchi GBA Style ❤️</title>
-    <!-- Motore grafico Phaser 3 -->
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tamagotchi d'Amore ❤️</title>
     <style>
         body {
             margin: 0;
-            background-color: #0f0e17;
+            padding: 0;
+            background-color: #1a1528;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            color: white;
-            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            touch-action: none; /* Disabilita lo zoom e lo scroll nativo */
         }
-        #game-container {
+
+        .game-wrapper {
+            background: #2b233c;
             border: 4px solid #ff79c6;
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(255, 121, 198, 0.4);
+            border-radius: 12px;
+            padding: 15px;
+            width: 90%;
+            max-width: 360px;
+            box-shadow: 0 8px 25px rgba(255, 121, 198, 0.4);
+            text-align: center;
+            box-sizing: border-box;
         }
+
+        h1 { font-size: 1.1rem; color: #ff79c6; margin: 0 0 4px 0; }
+        .subtitle { font-size: 0.8rem; color: #bd93f9; margin: 0 0 10px 0; }
+
+        .room-scene {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            background-color: #383a59;
+            border: 3px solid #44475a;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        /* Elementi della stanza geometrici */
+        .sofa {
+            position: absolute; top: 70px; left: 50px; width: 210px; height: 60px;
+            background-color: #6272a4; border: 2px solid #282a36; border-radius: 6px;
+        }
+        .rug {
+            position: absolute; bottom: 15px; left: 45px; width: 220px; height: 30px;
+            background-color: #ff5555; border-radius: 15px;
+        }
+
+        /* Omino stilizzato */
+        .avatar {
+            position: absolute; bottom: 30px; left: 140px; width: 50px; height: 80px;
+            animation: breathe 2s infinite ease-in-out;
+        }
+        @keyframes breathe { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+
+        .hair { position: absolute; top: 0; left: 5px; width: 40px; height: 25px; background-color: #5c3a21; border-radius: 50% 50% 20% 20%; z-index: 3; }
+        .head { position: absolute; top: 15px; left: 10px; width: 30px; height: 25px; background-color: #ffdbac; border: 2px solid #1a1528; z-index: 2; }
+        .glasses {
+            position: absolute; top: 5px; left: 2px; width: 22px; height: 10px;
+            border: 2px solid #000; border-radius: 50%; background: rgba(139, 233, 253, 0.3); z-index: 4;
+        }
+        .shirt {
+            position: absolute; top: 38px; left: 7px; width: 32px; height: 25px;
+            background-color: #111; color: #ff79c6; font-size: 6px; text-align: center; line-height: 25px; font-weight: bold; z-index: 1;
+        }
+        .shorts { position: absolute; top: 61px; left: 10px; width: 26px; height: 15px; background-color: #3b71ca; }
+
+        .speech {
+            position: absolute; bottom: 5px; left: 10px; right: 10px;
+            background: rgba(40, 42, 54, 0.95); border: 1px solid #6272a4; border-radius: 4px;
+            padding: 5px; font-size: 0.8rem; color: #50fa7b;
+        }
+
+        /* Statistiche */
+        .stats {
+            background: #1e1e2f; border: 2px solid #44475a; border-radius: 6px;
+            padding: 8px; margin-bottom: 12px; font-size: 0.8rem; text-align: left;
+        }
+        .stat-row { margin-bottom: 8px; }
+        .stat-row:last-child { margin-bottom: 0; }
+        .bar-bg { background: #282a36; border: 1px solid #44475a; height: 10px; border-radius: 5px; overflow: hidden; margin-top: 3px; }
+        .bar-fill { height: 100%; background: #50fa7b; width: 100%; transition: width 0.4s ease-in-out; }
+
+        /* Pulsanti */
+        .buttons { display: flex; justify-content: space-between; gap: 5px; }
+        button {
+            background: #44475a; color: white; border: 2px solid #6272a4; border-radius: 6px;
+            padding: 10px; font-family: 'Courier New', Courier, monospace; font-size: 0.8rem;
+            cursor: pointer; width: 32%; transition: all 0.2s;
+        }
+        button:active { background: #ff79c6; color: #1a1528; transform: scale(0.97); }
     </style>
 </head>
 <body>
 
-    <div id="game-container"></div>
+    <div class="game-wrapper">
+        <h1>IL MIO RAGAZZO GBA</h1>
+        <p class="subtitle">Prenditi cura di me! ❤️</p>
 
-    <script src="script.js"></script>
+        <div class="room-scene">
+            <div class="sofa"></div>
+            <div class="rug"></div>
+            
+            <div class="avatar" id="omino">
+                <div class="hair"></div>
+                <div class="head">
+                    <div class="glasses"></div>
+                </div>
+                <div class="shirt">LOVE</div>
+                <div class="shorts"></div>
+            </div>
+
+            <div class="speech" id="status-text">Sto comodamente sul divano...</div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-row">
+                <span>🍕 Fame: <span id="fame-text">100</span>%</span>
+                <div class="bar-bg"><div class="bar-fill" id="fame-bar"></div></div>
+            </div>
+            <div class="stat-row">
+                <span>🚿 Igiene: <span id="igiene-text">100</span>%</span>
+                <div class="bar-bg"><div class="bar-fill" id="igiene-bar"></div></div>
+            </div>
+            <div class="stat-row">
+                <span>❤️ Felicità: <span id="felicita-text">100</span>%</span>
+                <div class="bar-bg"><div class="bar-fill" id="felicita-bar"></div></div>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button onclick="nutri()">🍕 Dai cibo</button>
+            <button onclick="lava()">🚿 Lavati</button>
+            <button onclick="coccola()">❤️ Coccola</button>
+        </div>
+    </div>
+
+    <script>
+        let fame = 100, igiene = 100, felicita = 100;
+
+        function aggiorna() {
+            document.getElementById("fame-text").innerText = fame;
+            document.getElementById("fame-bar").style.width = fame + "%";
+            document.getElementById("igiene-text").innerText = igiene;
+            document.getElementById("igiene-bar").style.width = igiene + "%";
+            document.getElementById("felicita-text").innerText = felicita;
+            document.getElementById("felicita-bar").style.width = felicita + "%";
+
+            let status = document.getElementById("status-text");
+            let omino = document.getElementById("omino");
+
+            if(fame < 20 || igiene < 20 || felicita < 20) {
+                status.innerText = "Uffa, trattami meglio! 😭";
+                omino.style.animation = "shake 0.3s infinite";
+            } else {
+                status.innerText = "Sto comodamente sul divano 😎";
+                omino.style.animation = "breathe 2s infinite ease-in-out";
+            }
+        }
+
+        function nutri() { fame = Math.min(100, fame + 25); aggiorna(); faiAnimazioneReazione(); }
+        function lava() { igiene = Math.min(100, igiene + 25); aggiorna(); faiAnimazioneReazione(); }
+        function coccola() { felicita = Math.min(100, felicita + 25); aggiorna(); faiAnimazioneReazione(); }
+
+        function faiAnimazioneReazione() {
+            let omino = document.getElementById("omino");
+            omino.style.transition = "none";
+            omino.style.transform = "translateY(-15px)";
+            setTimeout(() => {
+                omino.style.transition = "transform 0.3s ease-out";
+                omino.style.transform = "translateY(0)";
+            }, 50);
+        }
+
+        // Timer consumo (più lento per non morire subito)
+        setInterval(() => {
+            if(fame > 0) fame -= 1;
+            if(igiene > 0) igiene -= 1;
+            if(felicita > 0) felicita -= 1;
+            aggiorna();
+        }, 6000); // Consuma 1% ogni 6 secondi
+
+        aggiorna();
+    </script>
+    <style>
+        @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } 100% { transform: translate(1px, -1px); } }
+    </style>
 </body>
 </html>
