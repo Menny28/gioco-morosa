@@ -3,7 +3,7 @@ const config = {
     width: 360,
     height: 500,
     parent: 'game-container',
-    backgroundColor: '#2b233c',
+    backgroundColor: '#383a59',
     scene: {
         preload: preload,
         create: create,
@@ -18,22 +18,31 @@ let fameText, igieneText, felicitaText;
 let fame = 100, igiene = 100, felicita = 100;
 
 function preload() {
-    // Carichiamo le immagini reali dalla cartella assets che hai creato
+    // Carichiamo le immagini dalla cartella assets
     this.load.image('stanza', 'assets/stanza.png');
     this.load.image('omino', 'assets/omino.png');
 }
 
 function create() {
-    // 1. Sfondo della stanza (centrato nello schermo del gioco)
-    // Se l'immagine è molto grande o piccola, la posizioniamo al centro
-    let bg = this.add.image(180, 200, 'stanza');
-    bg.setDisplaySize(360, 250); // Adatta la stanza alla schermata stile GBA
+    // Gestione di sicurezza: se l'immagine stanza non si carica, mettiamo un colore di fondo
+    let bg;
+    try {
+        bg = this.add.image(180, 200, 'stanza');
+        bg.setDisplaySize(360, 250);
+    } catch(e) {
+        bg = this.add.rectangle(180, 200, 360, 250, 0x44475a);
+    }
 
-    // 2. Il tuo omino pixel art al centro (sopra il divano/stanza)
-    ominoSprite = this.add.image(180, 210, 'omino');
-    ominoSprite.setScale(1.5); // Modifica questo valore se vuoi rimpicciolire o ingrandire l'omino
+    // Gestione di sicurezza per l'omino
+    try {
+        ominoSprite = this.add.image(180, 210, 'omino');
+        ominoSprite.setScale(1.5);
+    } catch(e) {
+        // Se non trova l'immagine dell'omino, ne disegna uno geometrico provvisorio
+        ominoSprite = this.add.rectangle(180, 210, 40, 70, 0xffdbac);
+    }
 
-    // Effetto "respiro" o animazione leggera
+    // Effetto "respiro"
     this.tweens.add({
         targets: ominoSprite,
         y: 215,
@@ -43,7 +52,7 @@ function create() {
         ease: 'Sine.easeInOut'
     });
 
-    // 3. Pannello delle Statistiche in stile retro
+    // Pannello delle Statistiche
     this.add.rectangle(180, 60, 320, 90, 0x1e1e2f, 0.9).setStrokeStyle(2, 0x6272a4);
     
     this.add.text(25, 25, "IL MIO RAGAZZO GBA", { font: "13px Courier", fill: "#ff79c6" });
@@ -52,7 +61,7 @@ function create() {
     igieneText = this.add.text(25, 65, "🚿 Igiene: 100%", { font: "12px Courier", fill: "#50fa7b" });
     felicitaText = this.add.text(25, 85, "❤️ Felicità: 100%", { font: "12px Courier", fill: "#50fa7b" });
 
-    // 4. Pulsanti di interazione inferiori
+    // Pulsanti
     creaBottone(this, 70, 440, "DA MANGIARE", 0xff79c6, () => {
         fame = Math.min(100, fame + 20);
         aggiornaTesto();
@@ -72,9 +81,7 @@ function create() {
     });
 }
 
-function update() {
-    // Logica di aggiornamento continuo
-}
+function update() {}
 
 function aggiornaTesto() {
     fameText.setText("🍕 Fame: " + fame + "%");
