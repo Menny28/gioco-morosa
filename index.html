@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tamagotchi GBA Style ❤️</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1a1528;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .game-wrapper {
+            background: #2b233c;
+            border: 4px solid #ff79c6;
+            border-radius: 12px;
+            padding: 15px;
+            width: 90%;
+            max-width: 360px;
+            box-shadow: 0 8px 25px rgba(255, 121, 198, 0.4);
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        h1 { font-size: 1.1rem; color: #ff79c6; margin: 0 0 4px 0; }
+        .subtitle { font-size: 0.8rem; color: #bd93f9; margin: 0 0 10px 0; }
+
+        .room-scene {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            background-color: #383a59;
+            border: 3px solid #44475a;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Stile per le tue immagini caricate */
+        .bg-stanza {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        .avatar-img {
+            position: relative;
+            width: 90px; /* Regola la grandezza del tuo omino qui se serve */
+            height: auto;
+            z-index: 2;
+            animation: breathe 2s infinite ease-in-out;
+        }
+
+        @keyframes breathe { 
+            0%, 100% { transform: translateY(0); } 
+            50% { transform: translateY(-4px); } 
+        }
+
+        .speech {
+            position: absolute; bottom: 5px; left: 10px; right: 10px;
+            background: rgba(40, 42, 54, 0.95); border: 1px solid #6272a4; border-radius: 4px;
+            padding: 5px; font-size: 0.8rem; color: #50fa7b; z-index: 3;
+        }
+
+        /* Statistiche */
+        .stats {
+            background: #1e1e2f; border: 2px solid #44475a; border-radius: 6px;
+            padding: 8px; margin-bottom: 12px; font-size: 0.8rem; text-align: left;
+        }
+        .stat-row { margin-bottom: 8px; }
+        .stat-row:last-child { margin-bottom: 0; }
+        .bar-bg { background: #282a36; border: 1px solid #44475a; height: 10px; border-radius: 5px; overflow: hidden; margin-top: 3px; }
+        .bar-fill { height: 100%; background: #50fa7b; width: 100%; transition: width 0.4s ease-in-out; }
+
+        /* Pulsanti */
+        .buttons { display: flex; justify-content: space-between; gap: 5px; }
+        button {
+            background: #44475a; color: white; border: 2px solid #6272a4; border-radius: 6px;
+            padding: 10px; font-family: 'Courier New', Courier, monospace; font-size: 0.8rem;
+            cursor: pointer; width: 32%; transition: all 0.2s;
+        }
+        button:active { background: #ff79c6; color: #1a1528; transform: scale(0.97); }
+    </style>
+</head>
+<body>
+
+    <div class="game-wrapper">
+        <h1>IL MIO RAGAZZO GBA</h1>
+        <p class="subtitle">Prenditi cura di me! ❤️</p>
+
+        <div class="room-scene">
+            <!-- Qui richiamiamo le tue immagini dalla cartella assets -->
+            <img src="assets/stanza.png" class="bg-stanza" alt="Stanza">
+            <img src="assets/omino.png" class="avatar-img" id="omino" alt="Omino">
+
+            <div class="speech" id="status-text">Sto comodamente sul divano...</div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-row">
+                <span>🍕 Fame: <span id="fame-text">100</span>%</span>
+                <div class="bar-bg"><div class="bar-fill" id="fame-bar"></div></div>
+            </div>
+            <div class="stat-row">
+                <span>🚿 Igiene: <span id="igiene-text">100</span>%</span>
+                <div class="bar-bg"><div class="bar-fill" id="igiene-bar"></div></div>
+            </div>
+            <div class="stat-row">
+                <span>❤️ Felicità: <span id="felicita-text">100</span>%</span>
+                <div class="bar-bg"><div class="bar-fill" id="felicita-bar"></div></div>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button onclick="nutri()">🍕 Dai cibo</button>
+            <button onclick="lava()">🚿 Lavati</button>
+            <button onclick="coccola()">❤️ Coccola</button>
+        </div>
+    </div>
+
+    <script>
+        let fame = 100, igiene = 100, felicita = 100;
+
+        function aggiorna() {
+            document.getElementById("fame-text").innerText = fame;
+            document.getElementById("fame-bar").style.width = fame + "%";
+            document.getElementById("igiene-text").innerText = igiene;
+            document.getElementById("igiene-bar").style.width = igiene + "%";
+            document.getElementById("felicita-text").innerText = felicita;
+            document.getElementById("felicita-bar").style.width = felicita + "%";
+
+            let status = document.getElementById("status-text");
+            if(fame < 20 || igiene < 20 || felicita < 20) {
+                status.innerText = "Uffa, trattami meglio! 😭";
+            } else {
+                status.innerText = "Sto comodamente sul divano 😎";
+            }
+        }
+
+        function nutri() { fame = Math.min(100, fame + 25); aggiorna(); faiAnimazioneReazione(); }
+        function lava() { igiene = Math.min(100, igiene + 25); aggiorna(); faiAnimazioneReazione(); }
+        function coccola() { felicita = Math.min(100, felicita + 25); aggiorna(); faiAnimazioneReazione(); }
+
+        function faiAnimazioneReazione() {
+            let omino = document.getElementById("omino");
+            omino.style.transition = "none";
+            omino.style.transform = "translateY(-12px)";
+            setTimeout(() => {
+                omino.style.transition = "transform 0.3s ease-out";
+                omino.style.transform = "translateY(0)";
+            }, 50);
+        }
+
+        setInterval(() => {
+            if(fame > 0) fame -= 1;
+            if(igiene > 0) igiene -= 1;
+            if(felicita > 0) felicita -= 1;
+            aggiorna();
+        }, 6000);
+
+        aggiorna();
+    </script>
+</body>
+</html>
