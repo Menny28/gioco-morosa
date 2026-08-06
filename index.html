@@ -39,7 +39,7 @@
         h1 { font-size: 1.1rem; color: #ff79c6; margin: 2px 0; }
         .top-info { display: flex; justify-content: space-between; font-size: 0.75rem; color: #bd93f9; margin-bottom: 4px; }
 
-        /* Riquadro della stanza ottimizzato per il video MP4 */
+        /* Riquadro della stanza ottimizzato per i video MP4 e immagini */
         .room-scene {
             position: relative;
             width: 100%;
@@ -56,8 +56,8 @@
             align-items: center;
         }
 
-        /* Tag video che sostituisce la foto fissa dello sfondo */
-        .bg-video {
+        /* Gestione sia di elementi video che immagine dinamici */
+        .bg-media {
             position: absolute;
             width: 100%;
             height: 100%;
@@ -110,11 +110,9 @@
         </div>
 
         <div class="room-scene" id="scivola-scena">
-            <!-- Video di sfondo in loop continuo, senza audio e con autoplay -->
-            <video autoplay muted loop playsinline class="bg-video" id="video-personaggio">
-                <source src="assets/sfondo.mp4" type="video/mp4">
-                Il tuo browser non supporta i video HTML5.
-            </video>
+            <!-- Media dinamico che cambia in base all'azione o stato -->
+            <video autoplay muted loop playsinline class="bg-media" id="media-video" style="display:none;"></video>
+            <img class="bg-media" id="media-img" src="assets/sfondo.mp4" alt="Tommy Stanza" style="display:none;">
 
             <!-- 1. Menu Minigiochi -->
             <div class="overlay-box" id="menu-minigiochi">
@@ -196,6 +194,8 @@
             timestamp: Date.now()
         };
 
+        let statoAnimazione = "sfondo"; // sfondi possibili: sfondo, felice, pulizia, sonno, affamato
+
         const listaQuiz = [
             {
                 domanda: "Che giorno mi sono fidanzato con la Benny?",
@@ -247,6 +247,25 @@
             localStorage.setItem('tommy_data', JSON.stringify(giocoData));
         }
 
+        function impostaMedia(percorso, tipo) {
+            let videoEl = document.getElementById("media-video");
+            let imgEl = document.getElementById("media-img");
+
+            if (tipo === 'video') {
+                imgEl.style.display = "none";
+                videoEl.style.display = "block";
+                if (videoEl.getAttribute("src") !== percorso) {
+                    videoEl.src = percorso;
+                    videoEl.load();
+                    videoEl.play().catch(e => console.log("Autoplay bloccato o file in caricamento"));
+                }
+            } else {
+                videoEl.style.display = "none";
+                imgEl.style.display = "block";
+                imgEl.src = percorso;
+            }
+        }
+
         function aggiornaInterfaccia() {
             let dataOggi = new Date();
             let ore = String(dataOggi.getHours()).padStart(2, '0');
@@ -261,13 +280,29 @@
             document.getElementById("energia-bar").style.width = giocoData.energia + "%";
             document.getElementById("monete-val").innerText = Math.floor(giocoData.monete);
 
-            let videoEl = document.getElementById("video-personaggio");
-            // Se in futuro aggiungerai video dedicati per il sonno o la felicità potrai mapparli qui,
-            // per ora usa costantemente il video di sfondo in loop.
+            // Gestione automatica dei file video e png
+            if (giocoData.isDormendo) {
+                impostaMedia("assets/sonno.png", "img"); // Quando avrai sonno.mp4 basterà metterlo qui
+            } else if (statoAnimazione === "felice") {
+                impostaMedia("assets/felice.mp4", "video");
+            } else if (statoAnimazione === "pulizia") {
+                impostaMedia("assets/pulizia.mp4", "video");
+            } else if (giocoData.fame < 35 || giocoData.energia < 25) {
+                impostaMedia("assets/affamato.png", "img");
+            } else {
+                impostaMedia("assets/sfondo.mp4", "video");
+            }
         }
 
-        function attivaFeliceTemporaneo() {
+        function attivaStatoTemporaneo(nuovoStato, durata = 2500) {
+            statoAnimazione = nuovoStato;
             aggiornaInterfaccia();
+            setTimeout(() => {
+                if (statoAnimazione === nuovoStato) {
+                    statoAnimazione = "sfondo";
+                    aggiornaInterfaccia();
+                }
+            }, durata);
         }
 
         function apriNegozio() {
@@ -327,6 +362,7 @@
                 giocoData.inventario[tipo]--;
                 giocoData.fame = Math.min(100, giocoData.fame + percentuale);
                 chiudiTuttiOverlay();
+                attivaStatoTemporaneo("felice");
                 faiAnimazione();
                 aggiornaInterfaccia();
                 salvaStato();
@@ -336,6 +372,7 @@
         function lava() {
             if (giocoData.isDormendo) return;
             giocoData.igiene = Math.min(100, giocoData.igiene + 35);
+            attivaStatoTemporaneo("pulizia", 3500); // Mostra il video di pulizia
             faiAnimazione();
             aggiornaInterfaccia();
             salvaStato();
@@ -345,6 +382,7 @@
             giocoData.isDormendo = !giocoData.isDormendo;
             if (!giocoData.isDormendo) {
                 giocoData.energia = 100;
+                attivaStatoTemporaneo("felice");
             }
             aggiornaInterfaccia();
             salvaStato();
@@ -355,6 +393,7 @@
             giocoData.fame = Math.min(100, giocoData.fame + 10);
             giocoData.igiene = Math.min(100, giocoData.igiene + 10);
             giocoData.energia = Math.min(100, giocoData.energia + 10);
+            attivaStatoTemporaneo("felice");
             faiAnimazione();
             aggiornaInterfaccia();
             salvaStato();
@@ -404,6 +443,7 @@
             chiudiTuttiOverlay();
             if (corretto) {
                 giocoData.monete += 40;
+                attivaStatoTemporaneo("felice");
                 alert("Esatto! Grande amore (+40 🪙)");
             } else {
                 alert("Sbagliato! Riprova la prossima volta.");
@@ -432,6 +472,7 @@
                 (sceltaGiocatore === 'sasso' && sceltaTommy === 'forbice')
             ) {
                 giocoData.monete += 25;
+                attivaStatoTemporaneo("felice");
                 esito = "Hai vinto! (+25 🪙) Tommy aveva scelto " + sceltaTommy;
             } else {
                 esito = "Hai perso! Tommy aveva scelto " + sceltaTommy;
