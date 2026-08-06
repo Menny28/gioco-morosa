@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tommy Tamagotchi ❤️</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1a1528;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .game-wrapper {
+            background: #2b233c;
+            border: 4px solid #ff79c6;
+            border-radius: 12px;
+            padding: 8px 10px;
+            width: 98%;
+            max-width: 400px;
+            height: 95vh;
+            max-height: 750px;
+            box-shadow: 0 8px 25px rgba(255, 121, 198, 0.4);
+            text-align: center;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        h1 { font-size: 1.1rem; color: #ff79c6; margin: 2px 0; }
+        .top-info { display: flex; justify-content: space-between; font-size: 0.75rem; color: #bd93f9; margin-bottom: 4px; }
+
+        /* Riquadro della stanza ottimizzato per i video MP4 e immagini */
+        .room-scene {
+            position: relative;
+            width: 100%;
+            flex-grow: 1;
+            min-height: 240px;
+            max-height: 280px;
+            background-color: #383a59;
+            border: 3px solid #44475a;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Gestione sia di elementi video che immagine dinamici */
+        .bg-media {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        /* Pannelli a comparsa compatti */
+        .overlay-box {
+            position: absolute; bottom: 0; left: 0; right: 0; background: rgba(26, 21, 40, 0.95);
+            border-top: 2px solid #ff79c6;
+            z-index: 5; display: none; flex-direction: column; padding: 8px; max-height: 180px; overflow-y: auto;
+        }
+        .overlay-box h3 { font-size: 0.85rem; color: #ff79c6; margin: 0 0 4px 0; }
+        .overlay-box p { font-size: 0.7rem; color: #fff; margin-bottom: 6px; text-align: center; }
+        
+        .mg-btns { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+        .mg-btn { background: #6272a4; border: 1px solid #ff79c6; color: white; padding: 5px; border-radius: 4px; font-family: inherit; font-size: 0.7rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .mg-btn:active { background: #ff79c6; color: #1a1528; }
+
+        /* Statistiche */
+        .stats {
+            background: #1e1e2f; border: 2px solid #44475a; border-radius: 6px;
+            padding: 6px 8px; margin-bottom: 6px; font-size: 0.75rem; text-align: left;
+        }
+        .stat-row { margin-bottom: 4px; }
+        .stat-row:last-child { margin-bottom: 0; }
+        .bar-bg { background: #282a36; border: 1px solid #44475a; height: 7px; border-radius: 4px; overflow: hidden; margin-top: 2px; }
+        .bar-fill { height: 100%; background: #50fa7b; width: 100%; transition: width 0.4s ease-in-out; }
+
+        /* Pulsanti di azione inferiori */
+        .buttons-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 2px; }
+        button {
+            background: #44475a; color: white; border: 2px solid #6272a4; border-radius: 5px;
+            padding: 6px 4px; font-family: 'Courier New', Courier, monospace; font-size: 0.68rem;
+            cursor: pointer; transition: all 0.2s;
+        }
+        button:active { background: #ff79c6; color: #1a1528; transform: scale(0.97); }
+    </style>
+</head>
+<body>
+
+    <div class="game-wrapper">
+        <div>
+            <h1>TOMMY TAMAGOTCHI</h1>
+            <div class="top-info">
+                <span id="ore-text">Ore: --:--</span>
+                <span>🪙 Monete: <span id="monete-val">50</span></span>
+            </div>
+        </div>
+
+        <div class="room-scene" id="scivola-scena">
+            <!-- Media dinamico che cambia in base all'azione o stato -->
+            <video autoplay muted loop playsinline class="bg-media" id="media-video" style="display:none;"></video>
+            <img class="bg-media" id="media-img" src="assets/sfondo.mp4" alt="Tommy Stanza" style="display:none;">
+
+            <!-- 1. Menu Minigiochi -->
+            <div class="overlay-box" id="menu-minigiochi">
+                <h3>SALA GIOCHI 🕹️</h3>
+                <div class="mg-btns">
+                    <button class="mg-btn" onclick="apriQuiz()">💡 Quiz d'Amore <span>(+40🪙)</span></button>
+                    <button class="mg-btn" onclick="apriRps()">✂️ Carta, Forbice, Sasso <span>(+25🪙)</span></button>
+                    <button class="mg-btn" style="border-color: #ff5555; justify-content: center;" onclick="chiudiTuttiOverlay()">Chiudi</button>
+                </div>
+            </div>
+
+            <!-- 2. Overlay Quiz d'Amore -->
+            <div class="overlay-box" id="box-quiz">
+                <h3 id="quiz-titolo">Quiz d'Amore ❤️</h3>
+                <p id="quiz-domanda">Domanda...</p>
+                <div class="mg-btns" id="quiz-opzioni"></div>
+            </div>
+
+            <!-- 3. Overlay Carta Forbice Sasso -->
+            <div class="overlay-box" id="box-rps">
+                <h3>Carta, Forbice, Sasso ✂️</h3>
+                <p id="rps-testo">Scegli la tua mossa:</p>
+                <div class="mg-btns">
+                    <button class="mg-btn" style="justify-content:center;" onclick="giocaRps('carta')">📄 Carta</button>
+                    <button class="mg-btn" style="justify-content:center;" onclick="giocaRps('forbice')">✂️ Forbice</button>
+                    <button class="mg-btn" style="justify-content:center;" onclick="giocaRps('sasso')">🪨 Sasso</button>
+                    <button class="mg-btn" style="border-color: #ff5555; justify-content:center;" onclick="chiudiTuttiOverlay()">Chiudi</button>
+                </div>
+            </div>
+
+            <!-- 4. NEGOZIO (Market Cibo) -->
+            <div class="overlay-box" id="box-negozio">
+                <h3>NEGOZIO ALIMENTARE 🛒</h3>
+                <div class="mg-btns">
+                    <button class="mg-btn" onclick="compraCibo('pizza', 15, 25)">🍕 Pizza Classica (15🪙) <span>+25% Fame</span></button>
+                    <button class="mg-btn" onclick="compraCibo('panino', 25, 40)">🥪 Panino Speciale (25🪙) <span>+40% Fame</span></button>
+                    <button class="mg-btn" onclick="compraCibo('bibita', 10, 15)">🥤 Energy Drink (10🪙) <span>+15% Fame</span></button>
+                    <button class="mg-btn" style="border-color: #ff5555; justify-content:center;" onclick="chiudiTuttiOverlay()">Chiudi Negozio</button>
+                </div>
+            </div>
+
+            <!-- 5. FRIGO (Inventario Cibo) -->
+            <div class="overlay-box" id="box-frigo">
+                <h3>FRIGORIFERO (Inventario) 🧊</h3>
+                <div class="mg-btns" id="lista-frigo"></div>
+                <button class="mg-btn" style="border-color: #ff5555; justify-content:center; margin-top:4px;" onclick="chiudiTuttiOverlay()">Chiudi Frigo</button>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-row">
+                <span>🍕 Fame: <span id="fame-text">100</span>%</span>
+                <div class="bar-bg"><div class="bar-fill" id="fame-bar"></div></div>
+            </div>
+            <div class="stat-row">
+                <span>🚿 Igiene: <span id="igiene-text">100</span>%</span>
+                <div class="bar-bg"><div class="bar-fill" id="igiene-bar" style="background:#8be9fd;"></div></div>
+            </div>
+            <div class="stat-row">
+                <span>⚡ Energia: <span id="energia-text">100</span>%</span>
+                <div class="bar-bg"><div class="bar-fill" id="energia-bar" style="background:#ffb86c;"></div></div>
+            </div>
+        </div>
+
+        <div class="buttons-grid">
+            <button onclick="apriFrigo()">🧊 Frigo</button>
+            <button onclick="apriNegozio()">🛒 Negozio</button>
+            <button onclick="lava()">🚿 Doccia</button>
+            <button onclick="dormi()">💤 Dormi</button>
+            <button onclick="apriMenuMinigiochi()">🎮 Giochi</button>
+            <button onclick="coccola()">❤️ Coccola</button>
+        </div>
+    </div>
+
+    <script>
+        let giocoData = JSON.parse(localStorage.getItem('tommy_data')) || {
+            fame: 100, igiene: 100, energia: 100, monete: 60, isDormendo: false,
+            inventario: { pizza: 1, panino: 0, bibita: 2 },
+            timestamp: Date.now()
+        };
+
+        let statoAnimazione = "sfondo"; // sfondi possibili: sfondo, felice, pulizia, sonno, affamato
+
+        const listaQuiz = [
+            {
+                domanda: "Che giorno mi sono fidanzato con la Benny?",
+                opzioni: [
+                    { testo: "22/07/25", corretto: false },
+                    { testo: "22/06/25", corretto: true },
+                    { testo: "21/06/25", corretto: false }
+                ]
+            },
+            {
+                domanda: "Dove ho visto la Benny la prima volta?",
+                opzioni: [
+                    { testo: "Al mercato", corretto: false },
+                    { testo: "In gelateria", corretto: false },
+                    { testo: "In pizzeria", corretto: true }
+                ]
+            },
+            {
+                domanda: "Che numero di scarpe porto?",
+                opzioni: [
+                    { testo: "45", corretto: false },
+                    { testo: "44,5", corretto: true },
+                    { testo: "44", corretto: false }
+                ]
+            }
+        ];
+
+        let quizCorrente = 0;
+
+        function calcolaTempoAssenza() {
+            let oraAttuale = Date.now();
+            let secondiPassati = Math.floor((oraAttuale - giocoData.timestamp) / 1000);
+            if (secondiPassati > 10) {
+                let cicli = Math.floor(secondiPassati / 15);
+                if (giocoData.isDormendo) {
+                    giocoData.energia = Math.min(100, giocoData.energia + (cicli * 2));
+                } else {
+                    giocoData.fame = Math.max(0, giocoData.fame - (cicli * 1));
+                    giocoData.igiene = Math.max(0, giocoData.igiene - (Math.floor(cicli * 0.3)));
+                    giocoData.energia = Math.max(0, giocoData.energia - (Math.floor(cicli * 0.5)));
+                    giocoData.monete += Math.floor(cicli * 0.2);
+                }
+            }
+            salvaStato();
+        }
+
+        function salvaStato() {
+            giocoData.timestamp = Date.now();
+            localStorage.setItem('tommy_data', JSON.stringify(giocoData));
+        }
+
+        function impostaMedia(percorso, tipo) {
+            let videoEl = document.getElementById("media-video");
+            let imgEl = document.getElementById("media-img");
+
+            if (tipo === 'video') {
+                imgEl.style.display = "none";
+                videoEl.style.display = "block";
+                if (videoEl.getAttribute("src") !== percorso) {
+                    videoEl.src = percorso;
+                    videoEl.load();
+                    videoEl.play().catch(e => console.log("Autoplay bloccato o file in caricamento"));
+                }
+            } else {
+                videoEl.style.display = "none";
+                imgEl.style.display = "block";
+                imgEl.src = percorso;
+            }
+        }
+
+        function aggiornaInterfaccia() {
+            let dataOggi = new Date();
+            let ore = String(dataOggi.getHours()).padStart(2, '0');
+            let minuti = String(dataOggi.getMinutes()).padStart(2, '0');
+            document.getElementById("ore-text").innerText = "Ore: " + ore + ":" + minuti;
+
+            document.getElementById("fame-text").innerText = Math.round(giocoData.fame);
+            document.getElementById("fame-bar").style.width = giocoData.fame + "%";
+            document.getElementById("igiene-text").innerText = Math.round(giocoData.igiene);
+            document.getElementById("igiene-bar").style.width = giocoData.igiene + "%";
+            document.getElementById("energia-text").innerText = Math.round(giocoData.energia);
+            document.getElementById("energia-bar").style.width = giocoData.energia + "%";
+            document.getElementById("monete-val").innerText = Math.floor(giocoData.monete);
+
+            // Gestione automatica dei file video e png
+            if (giocoData.isDormendo) {
+                impostaMedia("assets/sonno.png", "img"); // Quando avrai sonno.mp4 basterà metterlo qui
+            } else if (statoAnimazione === "felice") {
+                impostaMedia("assets/felice.mp4", "video");
+            } else if (statoAnimazione === "pulizia") {
+                impostaMedia("assets/pulizia.mp4", "video");
+            } else if (giocoData.fame < 35 || giocoData.energia < 25) {
+                impostaMedia("assets/affamato.png", "img");
+            } else {
+                impostaMedia("assets/sfondo.mp4", "video");
+            }
+        }
+
+        function attivaStatoTemporaneo(nuovoStato, durata = 2500) {
+            statoAnimazione = nuovoStato;
+            aggiornaInterfaccia();
+            setTimeout(() => {
+                if (statoAnimazione === nuovoStato) {
+                    statoAnimazione = "sfondo";
+                    aggiornaInterfaccia();
+                }
+            }, durata);
+        }
+
+        function apriNegozio() {
+            if (giocoData.isDormendo) return;
+            chiudiTuttiOverlay();
+            document.getElementById("box-negozio").style.display = "flex";
+        }
+
+        function compraCibo(tipo, costo, percentuale) {
+            if (giocoData.monete >= costo) {
+                giocoData.monete -= costo;
+                giocoData.inventario[tipo] = (giocoData.inventario[tipo] || 0) + 1;
+                alert("Hai acquistato con successo!");
+                aggiornaInterfaccia();
+                salvaStato();
+            } else {
+                alert("Non hai abbastanza monete! Fai qualche minigioco.");
+            }
+        }
+
+        function apriFrigo() {
+            if (giocoData.isDormendo) return;
+            chiudiTuttiOverlay();
+            let frigoBox = document.getElementById("lista-frigo");
+            frigoBox.innerHTML = "";
+
+            let cibiInfo = {
+                pizza: { nome: "🍕 Pizza Classica", percentuale: 25 },
+                panino: { nome: "🥪 Panino Speciale", percentuale: 40 },
+                bibita: { nome: "🥤 Energy Drink", percentuale: 15 }
+            };
+
+            let haCibo = false;
+            for (let tipo in cibiInfo) {
+                let quantita = giocoData.inventario[tipo] || 0;
+                if (quantita > 0) {
+                    haCibo = true;
+                    let btn = document.createElement("button");
+                    btn.className = "mg-btn";
+                    btn.innerHTML = `${cibiInfo[tipo].nome} (Qt: ${quantita}) <span>Manda (+${cibiInfo[tipo].percentuale}%)</span>`;
+                    btn.onclick = () => usaCibo(tipo, cibiInfo[tipo].percentuale);
+                    frigoBox.appendChild(btn);
+                }
+            }
+
+            if (!haCibo) {
+                let p = document.createElement("p");
+                p.innerText = "Il frigo è vuoto! Vai al Negozio a fare la spesa.";
+                frigoBox.appendChild(p);
+            }
+
+            document.getElementById("box-frigo").style.display = "flex";
+        }
+
+        function usaCibo(tipo, percentuale) {
+            if (giocoData.inventario[tipo] > 0) {
+                giocoData.inventario[tipo]--;
+                giocoData.fame = Math.min(100, giocoData.fame + percentuale);
+                chiudiTuttiOverlay();
+                attivaStatoTemporaneo("felice");
+                faiAnimazione();
+                aggiornaInterfaccia();
+                salvaStato();
+            }
+        }
+
+        function lava() {
+            if (giocoData.isDormendo) return;
+            giocoData.igiene = Math.min(100, giocoData.igiene + 35);
+            attivaStatoTemporaneo("pulizia", 3500); // Mostra il video di pulizia
+            faiAnimazione();
+            aggiornaInterfaccia();
+            salvaStato();
+        }
+
+        function dormi() {
+            giocoData.isDormendo = !giocoData.isDormendo;
+            if (!giocoData.isDormendo) {
+                giocoData.energia = 100;
+                attivaStatoTemporaneo("felice");
+            }
+            aggiornaInterfaccia();
+            salvaStato();
+        }
+
+        function coccola() {
+            if (giocoData.isDormendo) return;
+            giocoData.fame = Math.min(100, giocoData.fame + 10);
+            giocoData.igiene = Math.min(100, giocoData.igiene + 10);
+            giocoData.energia = Math.min(100, giocoData.energia + 10);
+            attivaStatoTemporaneo("felice");
+            faiAnimazione();
+            aggiornaInterfaccia();
+            salvaStato();
+        }
+
+        function chiudiTuttiOverlay() {
+            document.getElementById("menu-minigiochi").style.display = "none";
+            document.getElementById("box-quiz").style.display = "none";
+            document.getElementById("box-rps").style.display = "none";
+            document.getElementById("box-negozio").style.display = "none";
+            document.getElementById("box-frigo").style.display = "none";
+        }
+
+        function apriMenuMinigiochi() {
+            if (giocoData.isDormendo) return;
+            chiudiTuttiOverlay();
+            document.getElementById("menu-minigiochi").style.display = "flex";
+        }
+
+        function apriQuiz() {
+            chiudiTuttiOverlay();
+            document.getElementById("box-quiz").style.display = "flex";
+            quizCorrente = Math.floor(Math.random() * listaQuiz.length);
+            let q = listaQuiz[quizCorrente];
+            document.getElementById("quiz-domanda").innerText = q.domanda;
+            
+            let containerOpzioni = document.getElementById("quiz-opzioni");
+            containerOpzioni.innerHTML = "";
+            q.opzioni.forEach(op => {
+                let btn = document.createElement("button");
+                btn.className = "mg-btn";
+                btn.style.justifyContent = "center";
+                btn.innerText = op.testo;
+                btn.onclick = () => verificaQuiz(op.corretto);
+                containerOpzioni.appendChild(btn);
+            });
+            let btnIndietro = document.createElement("button");
+            btnIndietro.className = "mg-btn";
+            btnIndietro.style.borderColor = "#ff5555";
+            btnIndietro.style.justifyContent = "center";
+            btnIndietro.innerText = "Indietro";
+            btnIndietro.onclick = apriMenuMinigiochi;
+            containerOpzioni.appendChild(btnIndietro);
+        }
+
+        function verificaQuiz(corretto) {
+            chiudiTuttiOverlay();
+            if (corretto) {
+                giocoData.monete += 40;
+                attivaStatoTemporaneo("felice");
+                alert("Esatto! Grande amore (+40 🪙)");
+            } else {
+                alert("Sbagliato! Riprova la prossima volta.");
+            }
+            aggiornaInterfaccia();
+            salvaStato();
+        }
+
+        function apriRps() {
+            chiudiTuttiOverlay();
+            document.getElementById("box-rps").style.display = "flex";
+            document.getElementById("rps-testo").innerText = "Scegli la tua mossa contro Tommy:";
+        }
+
+        function giocaRps(sceltaGiocatore) {
+            chiudiTuttiOverlay();
+            let mosse = ['carta', 'forbice', 'sasso'];
+            let sceltaTommy = mosse[Math.floor(Math.random() * mosse.length)];
+            
+            let esito = "";
+            if (sceltaGiocatore === sceltaTommy) {
+                esito = "Pareggio! (Tommy ha scelto " + sceltaTommy + ")";
+            } else if (
+                (sceltaGiocatore === 'carta' && sceltaTommy === 'sasso') ||
+                (sceltaGiocatore === 'forbice' && sceltaTommy === 'carta') ||
+                (sceltaGiocatore === 'sasso' && sceltaTommy === 'forbice')
+            ) {
+                giocoData.monete += 25;
+                attivaStatoTemporaneo("felice");
+                esito = "Hai vinto! (+25 🪙) Tommy aveva scelto " + sceltaTommy;
+            } else {
+                esito = "Hai perso! Tommy aveva scelto " + sceltaTommy;
+            }
+            alert(esito);
+            aggiornaInterfaccia();
+            salvaStato();
+        }
+
+        function faiAnimazione() {
+            let scena = document.getElementById("scivola-scena");
+            scena.style.transform = "translateY(-4px)";
+            setTimeout(() => { scena.style.transform = "translateY(0)"; }, 150);
+        }
+
+        calcolaTempoAssenza();
+        aggiornaInterfaccia();
+
+        setInterval(() => {
+            if (!giocoData.isDormendo) {
+                if (giocoData.fame > 0) giocoData.fame -= 0.2;
+                if (giocoData.igiene > 0) giocoData.igiene -= 0.05;
+                if (giocoData.energia > 0) giocoData.energia -= 0.1;
+                giocoData.monete += 0.05;
+            } else {
+                if (giocoData.energia < 100) giocoData.energia += 0.5;
+            }
+            aggiornaInterfaccia();
+            salvaStato();
+        }, 3000);
+    </script>
+</body>
+</html>
