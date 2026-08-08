@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tommy Tamagotchi ❤️</title>
+    <style>
+        body { margin: 0; background-color: #1a1528; color: #fff; font-family: 'Courier New', Courier, monospace; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .game-wrapper { background: #2b233c; border: 4px solid #ff79c6; border-radius: 12px; padding: 10px; width: 95%; max-width: 450px; height: 95vh; display: flex; flex-direction: column; }
+        
+        .main-display { position: relative; width: 100%; height: 300px; border: 3px solid #44475a; border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
+        .bg-video { position: absolute; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+        .status-img { position: absolute; width: 100%; height: 100%; object-fit: cover; z-index: 2; display: none; }
+
+        .menu-area { display: flex; flex-direction: column; gap: 5px; flex-grow: 1; overflow-y: auto; }
+        .stat-bar { background: #1e1e2f; padding: 5px; border-radius: 4px; margin-bottom: 5px; font-size: 0.7rem; }
+        .bar-outer { background: #282a36; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 2px; }
+        .bar-inner { height: 100%; background: #50fa7b; width: 100%; transition: width 0.5s; }
+        
+        button { background: #44475a; color: white; border: 1px solid #ff79c6; padding: 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; }
+        .romance-box { background: #44475a; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 10px; border: 1px solid #bd93f9; }
+    </style>
+</head>
+<body>
+
+<div class="game-wrapper">
+    <div class="romance-box">
+        <div id="counter-amore" style="font-size: 0.8rem; color: #ff79c6;">Insieme da: 412 giorni ❤️</div>
+        <div id="frase-amore" style="font-size: 0.7rem; margin-top:5px; font-style: italic;">"Sei la mia vita."</div>
+    </div>
+
+    <div class="main-display">
+        <video autoplay muted loop playsinline class="bg-video" src="assets/sfondo.mp4"></video>
+        <img id="status-img" class="status-img">
+    </div>
+
+    <div class="menu-area">
+        <div class="stat-bar">Fame <div class="bar-outer"><div id="fame-bar" class="bar-inner"></div></div></div>
+        <div class="stat-bar">Igiene <div class="bar-outer"><div id="igiene-bar" class="bar-inner"></div></div></div>
+        <div class="stat-bar">Energia <div class="bar-outer"><div id="energia-bar" class="bar-inner"></div></div></div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+            <button onclick="apriFrigo()">🧊 Frigo</button>
+            <button onclick="apriNegozio()">🛒 Negozio</button>
+            <button onclick="lava()">🚿 Doccia</button>
+            <button onclick="dormi()">💤 Dormi</button>
+            <button onclick="apriGioco()">🎮 Gioco</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let data = JSON.parse(localStorage.getItem('tommy_data')) || { fame: 100, igiene: 100, energia: 100, monete: 100 };
+    let stato = "sfondo"; // sfondo, affamato, sporco, felice, sonno, gioco, pulizia
+
+    const frasi = ["Ti amo amore mio!", "Sei la mia gioia.", "Pensavo a te...", "Pizza e film stasera?", "Sei bellissima."];
+
+    function aggiorna() {
+        // Logica Stati
+        let img = document.getElementById("status-img");
+        let ora = new Date().getHours();
+        
+        if (ora >= 22 || ora < 6) stato = "sonno";
+        
+        if (stato === "sfondo") img.style.display = "none";
+        else {
+            img.src = `assets/${stato}.png`;
+            img.style.display = "block";
+        }
+
+        // Barre
+        document.getElementById("fame-bar").style.width = data.fame + "%";
+        document.getElementById("igiene-bar").style.width = data.igiene + "%";
+        document.getElementById("energia-bar").style.width = data.energia + "%";
+        document.getElementById("frase-amore").innerText = `"${frasi[Math.floor(Math.random()*frasi.length)]}"`;
+        
+        localStorage.setItem('tommy_data', JSON.stringify(data));
+    }
+
+    // Timer Lento (Consumo ultra-lento per apertura 2x al giorno)
+    setInterval(() => {
+        data.fame = Math.max(0, data.fame - 0.05);
+        data.igiene = Math.max(0, data.igiene - 0.02);
+        data.energia = Math.max(0, data.energia - 0.03);
+        
+        // Logica Alternanza Affamato/Sporco
+        if (data.fame < 50 && stato !== "sonno") stato = "affamato";
+        else if (data.igiene < 50 && stato !== "sonno") stato = "sporco";
+        else if (stato !== "sonno" && stato !== "gioco") stato = "sfondo";
+        
+        aggiorna();
+    }, 10000); // Aggiorna ogni 10 secondi
+
+    function apriGioco() {
+        stato = "gioco";
+        aggiorna();
+        setTimeout(() => { stato = "sfondo"; aggiorna(); }, 5000);
+    }
+    
+    function lava() { 
+        stato = "pulizia"; 
+        data.igiene = 100;
+        aggiorna(); 
+        setTimeout(() => { stato = "felice"; aggiorna(); }, 2000);
+        setTimeout(() => { stato = "sfondo"; aggiorna(); }, 4000);
+    }
+    
+    function dormi() { 
+        stato = "sonno"; 
+        aggiorna(); 
+    }
+
+    aggiorna();
+</script>
+</body>
+</html>
