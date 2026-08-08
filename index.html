@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tommy Tamagotchi ❤️</title>
+    <style>
+        body { margin: 0; background-color: #1a1528; color: #fff; font-family: 'Courier New', Courier, monospace; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .game-wrapper { background: #2b233c; border: 4px solid #ff79c6; border-radius: 12px; padding: 10px; width: 95%; max-width: 450px; height: 95vh; display: flex; flex-direction: column; }
+        
+        .main-display { position: relative; width: 100%; height: 280px; border: 3px solid #44475a; border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
+        .bg-video { position: absolute; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+        .status-img { position: absolute; width: 100%; height: 100%; object-fit: cover; z-index: 2; display: none; }
+
+        .stat-box { background: #1e1e2f; padding: 8px; border-radius: 6px; margin-bottom: 5px; font-size: 0.7rem; }
+        .bar-outer { background: #282a36; height: 8px; border-radius: 4px; overflow: hidden; margin: 2px 0; }
+        .bar-inner { height: 100%; background: #50fa7b; width: 100%; transition: width 0.5s; }
+        
+        .buttons-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 10px; }
+        button { background: #44475a; color: white; border: 1px solid #ff79c6; padding: 6px; border-radius: 4px; cursor: pointer; font-size: 0.65rem; }
+        
+        /* Pannello menu che non copre l'immagine */
+        #menu-box { background: #44475a; padding: 10px; border-radius: 8px; font-size: 0.7rem; height: 120px; overflow-y: auto; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="game-wrapper">
+    <div style="text-align: center; color: #ff79c6; font-size: 0.8rem; margin-bottom: 5px;">Insieme da: <span id="giorni-count"></span> giorni ❤️</div>
+
+    <div class="main-display">
+        <video autoplay muted loop playsinline class="bg-video" src="assets/sfondo.mp4"></video>
+        <img id="status-img" class="status-img">
+    </div>
+
+    <div class="stat-box">
+        <div>Fame: <span id="f-txt">100</span>% | Igiene: <span id="i-txt">100</span>% | Energia: <span id="e-txt">100</span>%</div>
+        <div class="bar-outer"><div id="f-bar" class="bar-inner" style="width:100%"></div></div>
+    </div>
+
+    <div class="buttons-grid">
+        <button onclick="apriMenu('frigo')">🧊 Frigo</button>
+        <button onclick="apriMenu('negozio')">🛒 Negozio</button>
+        <button onclick="lava()">🚿 Doccia</button>
+        <button onclick="dormi()">💤 Dormi</button>
+        <button onclick="apriMenu('gioco')">🎮 Gioco</button>
+    </div>
+
+    <div id="menu-box"></div>
+</div>
+
+<script>
+    let data = JSON.parse(localStorage.getItem('tommy_data')) || { fame: 100, igiene: 100, energia: 100 };
+    let stato = "sfondo";
+
+    function aggiorna() {
+        let img = document.getElementById("status-img");
+        if (stato === "sfondo") img.style.display = "none";
+        else { img.src = `assets/${stato}.png`; img.style.display = "block"; }
+        
+        document.getElementById("f-txt").innerText = Math.round(data.fame);
+        document.getElementById("i-txt").innerText = Math.round(data.igiene);
+        document.getElementById("e-txt").innerText = Math.round(data.energia);
+        document.getElementById("f-bar").style.width = data.fame + "%";
+        localStorage.setItem('tommy_data', JSON.stringify(data));
+    }
+
+    function apriMenu(tipo) {
+        let box = document.getElementById("menu-box");
+        box.style.display = "block";
+        if(tipo === 'negozio') box.innerHTML = `<h4>Shopping</h4><button onclick="compra()">Compra Pizza (+20% Fame)</button>`;
+        if(tipo === 'frigo') box.innerHTML = `<h4>Frigo</h4><button onclick="mangia()">Mangia Pizza</button>`;
+        if(tipo === 'gioco') box.innerHTML = `<h4>Gioco</h4><button onclick="gioca()">Sasso Carta Forbice</button>`;
+    }
+
+    function compra() { data.fame = Math.min(100, data.fame + 20); aggiorna(); }
+    function mangia() { stato = "felice"; aggiorna(); setTimeout(() => { stato = "sfondo"; aggiorna(); }, 2000); }
+    function lava() { stato = "pulizia"; data.igiene = 100; aggiorna(); setTimeout(() => { stato = "sfondo"; aggiorna(); }, 2000); }
+    function dormi() { stato = "sonno"; aggiorna(); setTimeout(() => { stato = "sfondo"; aggiorna(); }, 5000); }
+    function gioca() { stato = "gioco"; aggiorna(); setTimeout(() => { stato = "sfondo"; aggiorna(); }, 2000); }
+
+    setInterval(() => {
+        data.fame = Math.max(0, data.fame - 0.1);
+        if(data.fame < 50) stato = "affamato";
+        aggiorna();
+    }, 5000);
+
+    document.getElementById("giorni-count").innerText = Math.floor((new Date() - new Date(2025, 5, 22)) / 86400000);
+    aggiorna();
+</script>
+</body>
+</html>
