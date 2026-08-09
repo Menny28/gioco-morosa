@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Tommy ❤ Un regalo per te</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐾</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Quicksand:wght@500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="room">
+  <div class="wallpaper-glow"></div>
+
+  <!-- Nameplate / day counter -->
+  <div class="nameplate">
+    <span class="paw">🐾</span>
+    <span id="giorni-count" class="pixel-num">0</span>
+    <span class="nameplate-label">giorni insieme</span>
+    <span class="paw">🐾</span>
+  </div>
+
+  <!-- Orologio digitale -->
+  <div class="clock-pill">🕒 <span id="clock-txt" class="pixel-num">--:--</span></div>
+
+  <!-- Streak di giorni consecutivi -->
+  <div class="streak-pill">🔥 <span id="streak-txt">0</span> giorni di fila</div>
+
+  <!-- The framed "living photo" -->
+  <div class="frame">
+    <div class="frame-inner">
+      <div class="brass-plaque">Tommy</div>
+      <div class="screen" id="screen">
+        <video class="layer bg-video" id="bg-video" autoplay muted loop playsinline src="assets/sfondo.mp4"></video>
+        <img class="layer status-img" id="status-img" alt="">
+        <div class="particles" id="particles"></div>
+        <div class="sleep-veil" id="sleep-veil"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flavor text -->
+  <div class="diary" id="diary">Ciao! Sono felice che tu sia qui 💛</div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat">
+      <span class="stat-icon">🍕</span>
+      <div class="bar-outer"><div class="bar-inner bar-fame" id="bar-fame" style="width:100%"></div></div>
+      <span class="stat-pct" id="pct-fame">100%</span>
+    </div>
+    <div class="stat">
+      <span class="stat-icon">🧼</span>
+      <div class="bar-outer"><div class="bar-inner bar-igiene" id="bar-igiene" style="width:100%"></div></div>
+      <span class="stat-pct" id="pct-igiene">100%</span>
+    </div>
+    <div class="stat">
+      <span class="stat-icon">🔋</span>
+      <div class="bar-outer"><div class="bar-inner bar-energia" id="bar-energia" style="width:100%"></div></div>
+      <span class="stat-pct" id="pct-energia">100%</span>
+    </div>
+  </div>
+
+  <!-- Affetto / love level -->
+  <div class="affetto-row">
+    <div class="affetto-level" id="affetto-level">Livello 1</div>
+    <div class="affetto-bar-outer"><div class="affetto-bar-inner" id="bar-affetto" style="width:0%"></div></div>
+    <div class="affetto-count"><span id="affetto-txt">0</span> 💗</div>
+  </div>
+
+  <!-- Action shelf -->
+  <div class="shelf">
+    <button class="action-btn" data-action="frigo">
+      <span class="icon">🧊</span><span class="lbl">Frigo</span>
+    </button>
+    <button class="action-btn" data-action="negozio">
+      <span class="icon">🛒</span><span class="lbl">Negozio</span>
+    </button>
+    <button class="action-btn" data-action="doccia">
+      <span class="icon">🚿</span><span class="lbl">Doccia</span>
+    </button>
+    <button class="action-btn" data-action="dormi">
+      <span class="icon">💤</span><span class="lbl">Dormi</span>
+    </button>
+    <button class="action-btn" data-action="gioco">
+      <span class="icon">🎮</span><span class="lbl">Gioca</span>
+    </button>
+    <button class="action-btn" data-action="coccola">
+      <span class="icon">🤍</span><span class="lbl">Coccola</span>
+    </button>
+  </div>
+
+  <div class="coins-row">💰 <span id="coins-txt">0</span> monetine</div>
+</div>
+
+<!-- Bottom sheet menu -->
+<div class="sheet-backdrop" id="sheet-backdrop"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-content" id="sheet-content"></div>
+</div>
+
+<!-- Love note modal -->
+<div class="note-backdrop" id="note-backdrop">
+  <div class="note-card">
+    <div class="note-heart">💌</div>
+    <h3 id="note-title" class="note-title"></h3>
+    <p id="note-text"></p>
+    <button id="note-close">Chiudi</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
